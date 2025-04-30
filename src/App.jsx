@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { FiPlus, FiTrash2, FiEdit2, FiSave, FiX } from "react-icons/fi";
+import {
+  FiPlus,
+  FiTrash2,
+  FiEdit2,
+  FiSave,
+  FiX,
+  FiFilter,
+} from "react-icons/fi";
 
 function App() {
   const [todos, setTodos] = useState([]);
@@ -7,17 +14,14 @@ function App() {
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState("");
   const [error, setError] = useState("");
+  const [priority, setPriority] = useState("Medium");
+  const [sortOrder, setSortOrder] = useState("HighToLow"); // 'HighToLow' or 'LowToHigh'
 
   // Load todos from localStorage
   useEffect(() => {
     const savedTodos = localStorage.getItem("todos");
     if (savedTodos) {
-      const parsedTodos = JSON.parse(savedTodos);
-      // Sort by newest first when loading
-      const sortedTodos = [...parsedTodos].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
-      setTodos(sortedTodos);
+      setTodos(JSON.parse(savedTodos));
     }
   }, []);
 
@@ -36,10 +40,10 @@ function App() {
       id: Date.now(),
       text: inputValue,
       completed: false,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toDateString(),
+      priority: priority, // Add priority
     };
 
-    // Add new task at the beginning of the array
     setTodos([newTodo, ...todos]);
     setInputValue("");
     setError("");
@@ -57,9 +61,10 @@ function App() {
     );
   };
 
-  const startEditing = (id, text) => {
+  const startEditing = (id, text, priority) => {
     setEditingId(id);
     setEditValue(text);
+    setPriority(priority);
   };
 
   const cancelEditing = () => {
@@ -76,33 +81,44 @@ function App() {
 
     setTodos(
       todos.map((todo) =>
-        todo.id === id ? { ...todo, text: editValue } : todo
+        todo.id === id ? { ...todo, text: editValue, priority: priority } : todo
       )
     );
     setEditingId(null);
+    setEditValue("");
     setError("");
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+  const sortTodosByPriority = (todos, order) => {
+    const priorityOrder = { High: 1, Medium: 2, Low: 3 };
+
+    return [...todos].sort((a, b) => {
+      const priorityA = priorityOrder[a.priority];
+      const priorityB = priorityOrder[b.priority];
+
+      if (order === "HighToLow") {
+        return priorityA - priorityB;
+      } else {
+        return priorityB - priorityA;
+      }
     });
   };
 
-  // Sort todos by newest first whenever they change
-  const sortedTodos = [...todos].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-  );
+  const toggleSortOrder = () => {
+    setSortOrder(sortOrder === "HighToLow" ? "LowToHigh" : "HighToLow");
+    setPriority("Medium"); // Reset priority to default
+  };
+
+  const sortedTodos = sortTodosByPriority(todos, sortOrder);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
-      <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="px-6 py-5 bg-gradient-to-r from-purple-600 to-blue-500">
-          <h1 className="text-2xl font-bold text-white">My To-Do List</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-white-100 py-8 px-4">
+      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg overflow-hidden font-sans">
+        <div className="flex justify-between items-end px-6 py-6 bg-gradient-to-b from-blue-200 to-white">
+          <h1 className="text-2xl font-bold text-blue-500">My To Do List</h1>
+          <p className="text-xs font-medium text-white bg-blue-500 px-4 py-2 rounded-lg transition duration-500 hover:scale-110">
+            Total Task : {todos.length}
+          </p>
         </div>
 
         <div className="p-6">
@@ -111,44 +127,50 @@ function App() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && addTodo()}
+              onKeyDown={(e) => e.key === "Enter" && addTodo()}
               placeholder="Add a new task..."
-              className="flex-grow px-4 py-3 border border-gray-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="flex-grow px-4 py-2 text-sm text-gray-400 border border-gray-200 rounded-l-full transition focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent focus:text-gray-800"
             />
             <button
               onClick={addTodo}
-              className="px-4 py-3 bg-purple-500 text-white rounded-r-lg hover:bg-purple-600 transition flex items-center">
+              className="px-4 py-2 bg-blue-500 text-white text-sm rounded-r-full transition duration-500 flex items-center hover:scale-120">
               <FiPlus className="mr-1" /> Add
             </button>
           </div>
 
           {error && (
-            <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-sm">
+            <div className="mb-4 px-4 py-2 bg-red-100 text-red-700 rounded text-sm">
               {error}
             </div>
           )}
-
+          <button
+            onClick={toggleSortOrder}
+            className="mb-4 flex mx-auto items-center px-4 py-2 bg-blue-500 text-white rounded-full text-sm hover:scale-110 transition duration-300">
+            <FiFilter size={16} className="mr-2" />
+            {"  "}
+            {sortOrder === "HighToLow" ? "High to Low" : "Low to High"}
+          </button>
           <ul className="space-y-3">
-            {sortedTodos.length === 0 ? (
+            {todos.length === 0 ? (
               <div className="text-center py-8">
-                <div className="text-gray-400 mb-2">No tasks yet</div>
-                <div className="text-sm text-gray-500">
-                  Add your first task above
-                </div>
+                <div className="text-gray-400 mb-2 font-medium">No tasks</div>
+                <div className="text-sm text-gray-500">Add your first task</div>
               </div>
             ) : (
               sortedTodos.map((todo) => (
                 <li
                   key={todo.id}
-                  className={`p-4 border rounded-lg transition-all duration-200 ${
-                    todo.completed ? "bg-gray-50" : "bg-white"
+                  className={`p-4 rounded-lg transition-all duration-500 hover:scale-103 ${
+                    todo.completed
+                      ? "bg-gradient-to-r from-blue-200 to-white-100"
+                      : "bg-gray-100"
                   }`}>
                   <div className="flex items-start">
                     <input
                       type="checkbox"
                       checked={todo.completed}
                       onChange={() => toggleComplete(todo.id)}
-                      className="mt-1 mr-3 h-5 w-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      className="mt-1 mr-3 h-4 w-4 rounded"
                     />
 
                     <div className="flex-1">
@@ -158,25 +180,38 @@ function App() {
                             type="text"
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
-                            onKeyPress={(e) =>
+                            onKeyDown={(e) =>
                               e.key === "Enter" && saveEdit(todo.id)
                             }
-                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className="w-full px-2 py-1 text-sm border border-gray-500 rounded focus:outline-none focus:ring-1 focus:ring-gray-500"
                             autoFocus
                           />
+                          <select
+                            value={priority}
+                            onChange={(e) => setPriority(e.target.value)}
+                            className="w-full px-2 py-1 mt-2 text-sm border border-gray-500 rounded focus:outline-none focus:ring-1 focus:ring-gray-500">
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                          </select>
                         </div>
                       ) : (
-                        <div
-                          className={`${
-                            todo.completed
-                              ? "line-through text-gray-500"
-                              : "text-gray-800"
-                          }`}>
-                          {todo.text}
-                        </div>
+                        <>
+                          <div
+                            className={`font-semibold ${
+                              todo.completed
+                                ? "line-through text-gray-500"
+                                : "text-gray-800"
+                            }`}>
+                            {todo.text}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Priority: {todo.priority}
+                          </div>
+                        </>
                       )}
                       <div className="text-xs text-gray-400 mt-1">
-                        Added: {formatDate(todo.createdAt)}
+                        Added: {todo.createdAt}
                       </div>
                     </div>
 
@@ -185,25 +220,27 @@ function App() {
                         <>
                           <button
                             onClick={() => saveEdit(todo.id)}
-                            className="p-1.5 text-green-500 hover:bg-green-50 rounded-full transition">
+                            className="p-1.5 text-green-500 hover:bg-green-100 rounded-full transition hover:-translate-y-1">
                             <FiSave size={16} />
                           </button>
                           <button
                             onClick={cancelEditing}
-                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-full transition">
+                            className="p-1.5 text-red-500 hover:bg-red-100 rounded-full transition hover:-translate-y-1">
                             <FiX size={16} />
                           </button>
                         </>
                       ) : (
                         <>
                           <button
-                            onClick={() => startEditing(todo.id, todo.text)}
-                            className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-full transition">
+                            onClick={() =>
+                              startEditing(todo.id, todo.text, todo.priority)
+                            }
+                            className="p-1.5 text-orange-500 hover:bg-orange-100 rounded-full transition hover:-translate-y-1">
                             <FiEdit2 size={16} />
                           </button>
                           <button
                             onClick={() => deleteTodo(todo.id)}
-                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-full transition">
+                            className="p-1.5 text-red-500 hover:bg-red-100 rounded-full transition hover:-translate-y-1">
                             <FiTrash2 size={16} />
                           </button>
                         </>
