@@ -1,12 +1,48 @@
-# React + Vite
+# Aplikasi Daftar Tugas
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Ini adalah aplikasi Daftar Tugas sederhana yang dibuat dengan React dan Tailwind CSS. Aplikasi ini memungkinkan pengguna untuk menambah, menghapus, menyelesaikan, mengedit, dan mengurutkan tugas berdasarkan prioritas.
 
-Currently, two official plugins are available:
+## Cara Menjalankan
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Sebelum menjalankan aplikasi, pastikan Anda telah menginstal Node.js di komputer Anda.
 
-## Expanding the ESLint configuration
+1.  **Instal Dependensi:**
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+    ```bash
+    npm install
+    ```
+
+2.  **Bangun Aplikasi:**
+
+    ```bash
+    npm run build
+    ```
+
+3.  **Pratinjau Aplikasi:**
+
+    ```bash
+    npm run preview
+    ```
+
+    Ini akan memulai server lokal, dan Anda dapat melihat aplikasi di browser Anda.
+
+## Teknologi yang Digunakan
+
+- React
+- Tailwind CSS
+- react-icons
+- localStorage
+
+## Fitur
+
+- Menambah tugas baru dengan prioritas (Tinggi, Sedang, Rendah).
+- Menghapus tugas.
+- Menandai tugas sebagai selesai.
+- Mengedit tugas yang sudah ada dan prioritasnya.
+- Mengurutkan tugas berdasarkan prioritas (Tinggi ke Rendah atau Rendah ke Tinggi).
+- Data disimpan di localStorage.
+
+## Catatan Penting
+
+- Pastikan Anda telah menginstal Node.js.
+- Jalankan `npm run build` sebelum `npm run preview` untuk menghasilkan build yang siap untuk produksi.
